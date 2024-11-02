@@ -1,7 +1,10 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const apiSlice = createApi({
-	baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3001/api' }),
+	// baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3001/api' }),
+	baseQuery: fetchBaseQuery({
+		baseUrl: 'https://stellusrxpoker-de9a8cd9d661.herokuapp.com/api',
+	}),
 	tagTypes: ['Users', 'Games'],
 	endpoints: builder => ({
 		getUsers: builder.query({
