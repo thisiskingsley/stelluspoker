@@ -148,7 +148,7 @@ export default function Game() {
 									ticketNumber: string;
 									gameId: string;
 								}) => {
-									if (user.card !== '_' && user.card !== '') {
+									if (user.card !== '0' && user.card !== '') {
 										let cardValue = Number(user.card);
 										score.push(cardValue);
 									}
@@ -159,7 +159,7 @@ export default function Game() {
 								<div className="font-bold text-xl">Statistics</div>
 								<div>
 									<span className="font-bold pe-1">Average:</span>{' '}
-									{average(score).toFixed(2)}
+									{score.length == 0 ? '' : average(score).toFixed(2)}
 								</div>
 								<br />
 								<div>
@@ -216,7 +216,7 @@ export default function Game() {
 							<div id="renderedNames" key={user.userId}>
 								{user.userId == getUser.data?.userId ? (
 									<div className="font-bold">
-										{user.name}: {user.card !== '_' ? user.card : ''}
+										{user.name}: {user.card !== '0' ? user.card : ''}
 										<FontAwesomeIcon
 											className="trashcan"
 											icon={faTrashCan}
@@ -230,7 +230,7 @@ export default function Game() {
 									</div>
 								) : (
 									<div>
-										{user.name}: {user.card !== '_' ? user.card : ''}
+										{user.name}: {user.card !== '0' ? user.card : ''}
 										<FontAwesomeIcon
 											className="trashcan"
 											icon={faTrashCan}
@@ -450,9 +450,9 @@ export default function Game() {
 								onClick={onClick}
 							/>
 							<img
-								id="_"
+								id="0"
 								className="card"
-								src="/deckOfCards/_.jpg"
+								src="/deckOfCards/0.jpg"
 								onClick={onClick}
 							/>
 						</div>
@@ -551,9 +551,9 @@ export default function Game() {
 								onClick={onClick}
 							/>
 							<img
-								id="_"
+								id="0"
 								className="card"
-								src="/deckOfCards/_.jpg"
+								src="/deckOfCards/0.jpg"
 								onClick={onClick}
 							/>
 						</div>
