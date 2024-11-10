@@ -6,12 +6,14 @@ import { PURGE } from 'redux-persist';
 
 export interface Game {
 	gameId: string;
+	ticketNumber: string;
 	reveal: boolean;
 	users: User[];
 }
 
 const initialState: Game = {
 	gameId: '',
+	ticketNumber: '',
 	reveal: false,
 	users: [],
 };
@@ -44,6 +46,9 @@ export const GameSlice = createSlice({
 				}
 			}
 		},
+		setGameTicket: (state: Game, action: PayloadAction<string>) => {
+			state.ticketNumber = action.payload;
+		},
 		removeGameUser: (state: Game, action: PayloadAction<User>) => {
 			state.users = state.users?.filter(
 				user => user.userId !== action.payload.userId
@@ -51,6 +56,9 @@ export const GameSlice = createSlice({
 		},
 		fetchGameUsers: (state: Game, action: PayloadAction<User[]>) => {
 			state.users = action.payload;
+		},
+		fetchCurrentGame: (state: Game, action: PayloadAction<Game>) => {
+			state = action.payload;
 		},
 	},
 	extraReducers(builder) {
@@ -61,7 +69,14 @@ export const GameSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { setNewGameId, setUsers, removeGameUser, setReveal, fetchGameUsers } =
-	GameSlice.actions;
+export const {
+	setNewGameId,
+	setUsers,
+	removeGameUser,
+	setReveal,
+	fetchGameUsers,
+	fetchCurrentGame,
+	setGameTicket,
+} = GameSlice.actions;
 
 export default GameSlice.reducer;

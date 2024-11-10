@@ -8,7 +8,9 @@
 		position: absolute;
 		left: 25px;
 		top: 10px;
-		padding: 0 15%;
+		margin: 0 15%;
+		height: 45px;
+		width: 40px;
 	}
 
 	#header {
@@ -16,7 +18,6 @@
 		margin: 0 20px;
 		align-items: center;
 		min-width: 700px;
-		/* max-width: 1360px; */
 		padding: 0 15%;
 	}
 }
@@ -36,6 +37,8 @@
 	position: absolute;
 	left: 25px;
 	top: 10px;
+	height: 45px;
+	width: 40px;
 }
 
 #title {
@@ -51,6 +54,45 @@
 #subheader {
 	min-width: 300px;
 	align-items: center;
+}
+
+#ticketNumber:hover {
+	color: #1565c0;
+	cursor: pointer;
+}
+
+#greenCheck {
+	color: green;
+	font-size: 35px;
+	position: relative;
+	padding: 1px;
+	left: 10px;
+	top: 3px;
+	height: 45px;
+	width: 40px;
+	border: solid;
+	border-radius: 7px;
+}
+
+#greenCheck:hover {
+	cursor: pointer;
+}
+
+#redCancel {
+	color: rgb(171, 0, 0);
+	font-size: 35px;
+	position: relative;
+	padding: 1px;
+	left: 15px;
+	top: 3px;
+	height: 45px;
+	width: 40px;
+	border: solid;
+	border-radius: 7px;
+}
+
+#redCancel:hover {
+	cursor: pointer;
 }
 
 #nameHeader {

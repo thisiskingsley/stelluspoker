@@ -9,6 +9,8 @@ import {
 	faHouseChimney,
 	faPlus,
 	faMinus,
+	faCheck,
+	faX,
 } from '@fortawesome/free-solid-svg-icons';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
@@ -18,8 +20,10 @@ import {
 	removeGameUser,
 	setReveal,
 	setUsers,
+	fetchCurrentGame,
+	setGameTicket,
 } from '@/lib/features/games/gamesSlice';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ChangeEvent, ChangeEventHandler } from 'react';
 import {
 	useCreateUserMutation,
 	useUpdateUserMutation,
@@ -30,9 +34,10 @@ import {
 	useGetUserQuery,
 	useDeleteGameUserMutation,
 	useUpdateGameMutation,
+	useUpdateGameTicketMutation,
 } from '@/lib/features/api/apiSlice';
 import { User } from '@/lib/features/users/usersSlice';
-import { Fade } from '@mui/material';
+import { Fade, TextField } from '@mui/material';
 import { socket } from '../../../../socket';
 import { persistor } from '@/lib/store';
 import Link from 'next/link';
@@ -47,6 +52,7 @@ export default function Game() {
 	const [createGame] = useCreateGameMutation();
 	const [addUsers] = useAddUsersMutation();
 	const [updateGame] = useUpdateGameMutation();
+	const [updateGameTicket] = useUpdateGameTicketMutation();
 
 	const user = useAppSelector(state => state.user);
 	const game = useAppSelector(state => state.game);
@@ -57,10 +63,13 @@ export default function Game() {
 
 	const [renderedNames, setRenderedNames] = useState<JSX.Element[]>([]);
 	const [open, setOpen] = useState(false);
-	const [revealCards, setRevealCards] = useState(getGameUsers.data?.foundGame?.reveal);
+	const [isEditable, setIsEditable] = useState(false);
+	// const [revealCards, setRevealCards] = useState(getGameUsers.data?.foundGame?.reveal);
 	const [revealButton, setRevealButton] = useState<JSX.Element>();
 	const [fibonacci, setFibonacci] = useState(true);
 	const [score, setScore] = useState<JSX.Element>();
+	const [ticket, setTicket] = useState('');
+	const [ticketValue, setTicketValue] = useState('');
 
 	const router = useRouter();
 
@@ -100,10 +109,20 @@ export default function Game() {
 		socket.emit('joinRoom', getGameUsers.data?.foundGame?.gameId);
 	}, [user, getUser.data, getGame.data, getGameUsers.data?.foundGame]);
 
+	// useEffect(() => {
+	// 	dispatch(setReveal(revealCards));
+	// 	updateGame(game); //for updating the reveal card key in the DB
+	// }, [getGameUsers.data?.foundGame, revealCards]);
+
 	useEffect(() => {
-		dispatch(setReveal(revealCards));
-		updateGame(game); //for updating the reveal card key in the DB
-	}, [getGameUsers.data?.foundGame, revealCards]);
+		toggleReveal();
+	}, [getGameUsers.data?.foundGame?.reveal]);
+
+	useEffect(() => {
+		if (ticketValue !== '') {
+			updateTicket();
+		}
+	}, [getGameUsers.data?.foundGame]);
 
 	useEffect(() => {
 		socket.emit('update', getGameUsers.data?.foundGame);
@@ -134,6 +153,21 @@ export default function Game() {
 
 				return <tbody>{tempCardCounts}</tbody>;
 			};
+
+			const clearVotes = () => {
+				data?.users.forEach(
+					(userData: {
+						name: string;
+						card: string;
+						userId: string;
+						ticketNumber: string;
+						gameId: string;
+					}) => ((userData.card = ''), updateUser(userData))
+				);
+			};
+
+			//Update Ticket Number
+			setTicket(data?.ticketNumber);
 
 			//Show Score
 			setScore(
@@ -183,9 +217,37 @@ export default function Game() {
 
 			//Switch Reveal Buttons
 			setRevealButton(
+				// <div className="flex justify-center">
+				// 	{user && !getUser.data?.userId && getUser.status == 'fulfilled' ? (
+				// 		<Button size="large" variant="contained" disabled>
+				// 			Reveal Cards
+				// 		</Button>
+				// 	) : (
+				// 		<Button
+				// 			size="large"
+				// 			variant="contained"
+				// 			onClick={() => {
+				// 				setRevealCards(!revealCards);
+				// 			}}
+				// 		>
+				// 			{!data?.reveal ? 'Reveal Cards' : 'Revote'}
+				// 		</Button>
+				// 	)}
+				// </div>
 				<div className="flex justify-center">
 					{user && !getUser.data?.userId && getUser.status == 'fulfilled' ? (
 						<Button size="large" variant="contained" disabled>
+							Reveal Cards
+						</Button>
+					) : !data?.reveal ? (
+						<Button
+							size="large"
+							variant="contained"
+							onClick={() => {
+								toggleReveal();
+								updateGame(game);
+							}}
+						>
 							Reveal Cards
 						</Button>
 					) : (
@@ -193,10 +255,13 @@ export default function Game() {
 							size="large"
 							variant="contained"
 							onClick={() => {
-								setRevealCards(!revealCards);
+								toggleReveal();
+								updateGame(game);
+								dispatch(setCard(''));
+								clearVotes();
 							}}
 						>
-							{!data?.reveal ? 'Reveal Cards' : 'Revote'}
+							Revote
 						</Button>
 					)}
 				</div>
@@ -309,7 +374,12 @@ export default function Game() {
 
 			setRenderedNames(tempRenderedNames);
 		});
-	}, [getGameUsers.data?.foundGame, getUser.data?.userId, revealCards]);
+	}, [getGameUsers.data?.foundGame, getUser.data?.userId]);
+	// }, [getGameUsers.data?.foundGame, getUser.data?.userId, isEditable]);
+
+	const toggleReveal = () => {
+		dispatch(setReveal(!getGameUsers.data?.foundGame?.reveal));
+	};
 
 	// useEffect(() => {
 	// 	//kick user out who's been deleted. --- I'M SO CLOSE TO FIGURING THIS OUT! ----
@@ -335,6 +405,7 @@ export default function Game() {
 	function onClick(element: any) {
 		let imgSrc = element?.target.attributes.id.value;
 		dispatch(setCard(imgSrc));
+		updateUser(user);
 	}
 
 	const copyURLToClipboard = () => {
@@ -355,6 +426,13 @@ export default function Game() {
 		setFibonacci(!fibonacci);
 	};
 
+	const updateTicket = () => {
+		if (ticketValue !== '') {
+			dispatch(setGameTicket(ticketValue));
+			updateGameTicket(game);
+		}
+	};
+
 	return (
 		<main>
 			<img id="background" src="/backgroundImage.svg" />
@@ -365,11 +443,44 @@ export default function Game() {
 				<h1>New Game</h1>
 			</div>
 			<div id="header" className="flex justify-between">
-				<h2>
-					Ticket#{' '}
+				<h2 id="ticketNumber">
+					{/* Ticket#{' '}
 					{user.ticketNumber
 						? user.ticketNumber
-						: getGame.data?.foundGame?.ticketNumber}
+						: getGame.data?.foundGame?.ticketNumber} */}
+
+					{isEditable == false ? (
+						<div onClick={() => setIsEditable(true)}>Ticket# {ticket}</div>
+					) : (
+						<div className="flex">
+							<TextField
+								id="outlined-required"
+								label="Enter ticket #"
+								placeholder={ticket}
+								autoComplete="off"
+								variant="outlined"
+								onChange={(
+									event: React.ChangeEvent<HTMLInputElement>
+								) => {
+									setTicketValue(event.target.value);
+								}}
+								value={ticketValue}
+							/>
+							<FontAwesomeIcon
+								id="greenCheck"
+								icon={faCheck}
+								onClick={() => {
+									updateTicket();
+									setIsEditable(false);
+								}}
+							/>
+							<FontAwesomeIcon
+								id="redCancel"
+								icon={faX}
+								onClick={() => setIsEditable(false)}
+							/>
+						</div>
+					)}
 				</h2>
 
 				<div id="subheader" className="flex justify-between">

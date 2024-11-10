@@ -87,6 +87,14 @@ export const apiSlice = createApi({
 			}),
 			invalidatesTags: ['Games'],
 		}),
+		updateGameTicket: builder.mutation({
+			query: game => ({
+				url: `/games/ticket/${game.gameId}`,
+				method: 'PATCH',
+				body: game,
+			}),
+			invalidatesTags: ['Games'],
+		}),
 	}),
 });
 
@@ -103,4 +111,5 @@ export const {
 	useCreateGameMutation,
 	useAddUsersMutation,
 	useUpdateGameMutation,
+	useUpdateGameTicketMutation,
 } = apiSlice;
