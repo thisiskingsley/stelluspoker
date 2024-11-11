@@ -464,6 +464,12 @@ export default function Game() {
 								) => {
 									setTicketValue(event.target.value);
 								}}
+								onKeyDown={(event: any) => {
+									if (event.key === 'Enter') {
+										updateTicket();
+										setIsEditable(false);
+									}
+								}}
 								value={ticketValue}
 							/>
 							<FontAwesomeIcon
